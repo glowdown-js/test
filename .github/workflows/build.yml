@@ -1,0 +1,45 @@
+name: Build TCC
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            output: tcc-linux
+          - os: macos-latest
+            output: tcc-macos
+
+    steps:
+      - name: Checkout TCC
+        uses: actions/checkout@v4
+        with:
+          repository: TinyCC/tinycc
+          ref: mob
+          path: tcc-src
+
+      - name: Configure
+        working-directory: tcc-src
+        run: ./configure
+
+      - name: Build
+        working-directory: tcc-src
+        run: make
+
+      - name: Verify
+        working-directory: tcc-src
+        run: |
+          ls -la tcc
+          ./tcc -v
+
+      - name: Upload TCC binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.output }}
+          path: tcc-src/tcc
