@@ -1,4 +1,4 @@
-name: Build TCC
+name: Build UFORTH
 
 on:
   push:
@@ -12,34 +12,19 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            output: tcc-linux
+            output: ufo-linux
           - os: macos-latest
-            output: tcc-macos
+            output: ufo-macos
+          - os: windows-latest
+            output: ufo-windows.exe
 
     steps:
-      - name: Checkout TCC
-        uses: actions/checkout@v4
-        with:
-          repository: TinyCC/tinycc
-          ref: mob
-          path: tcc-src
-
-      - name: Configure
-        working-directory: tcc-src
-        run: ./configure
+      - uses: actions/checkout@v4
 
       - name: Build
-        working-directory: tcc-src
-        run: make
+        run: gcc src/lexer.c src/compiler.c src/version.c src/main.c -o ${{ matrix.output }} -Iinclude
 
-      - name: Verify
-        working-directory: tcc-src
-        run: |
-          ls -la tcc
-          ./tcc -v
-
-      - name: Upload TCC binary
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.output }}
-          path: tcc-src/tcc
+          path: ${{ matrix.output }}
